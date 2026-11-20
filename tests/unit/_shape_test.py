@@ -610,3 +610,32 @@ def test_oriented_rectangle_arrow_points_for_non_cardinal_direction() -> None:
         [[4.88, 3.66], [6.5, 8.0], [1.88, 7.66], [-1.5, 2.0]], dtype=np.float64
     )
     assert arrow == pytest.approx(expected)
+
+
+
+@pytest.mark.parametrize(
+    ("shape_type", "initial_points", "min_count"),
+    [
+        ("polygon", [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)], 3),
+        ("linestrip", [(0.0, 0.0), (5.0, 5.0), (10.0, 10.0)], 2),
+    ],
+    ids=["polygon_min_three_points", "linestrip_min_two_points"],
+)
+def test_remove_point_stops_at_minimum_vertex_boundary(
+    *,
+    shape_type: ShapeType,
+    initial_points: list[tuple[float, float]],
+    min_count: int,
+) -> None:
+    shape = Shape(
+        shape_type=shape_type,
+        points=np.array(initial_points, dtype=np.float64),
+    )
+
+    assert shape.can_remove_point() is True
+    shape.remove_point(i=0)
+    assert len(shape.points) == min_count
+
+    assert shape.can_remove_point() is False
+    shape.remove_point(i=0)
+    assert len(shape.points) == min_count
