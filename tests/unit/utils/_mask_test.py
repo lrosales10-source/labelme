@@ -355,3 +355,37 @@ def test_shape_to_mask_point_marks_pixels_around_center() -> None:
     assert mask[60, 43]  # 3px from center, inside the 5px radius
     assert mask[62, 40]  # off the center row: a filled disk, not a horizontal line
     assert not mask[60, 46]  # 1px past the 5px radius
+
+
+
+@pytest.mark.parametrize(
+    ("shape_type", "points", "expected_any"),
+    [
+        ("polygon", [[10.0, 10.0], [20.0, 10.0], [30.0, 10.0]], True),
+        ("polygon", [[0.0, 0.0], [99.0, 0.0], [99.0, 99.0], [0.0, 99.0]], True),
+        ("rectangle", [[0.0, 0.0], [99.0, 99.0]], True),
+        ("linestrip", [[10.0, 10.0]], False),
+        ("linestrip", [[0.0, 0.0], [99.0, 99.0]], True),
+    ],
+    ids=[
+        "collinear_polygon",
+        "border_polygon",
+        "border_rectangle",
+        "single_point_linestrip",
+        "border_linestrip",
+    ],
+)
+def test_shape_to_mask_handles_boundary_and_degenerate_geometry(
+    *,
+    shape_type: str,
+    points: list[list[float]],
+    expected_any: bool,
+) -> None:
+    img_shape = (100, 100)
+    mask = mask_module.shape_to_mask(img_shape, points, shape_type=shape_type)
+
+    assert mask.shape == img_shape
+    assert mask.dtype == bool
+    assert bool(mask.any()) is expected_any
+
+
