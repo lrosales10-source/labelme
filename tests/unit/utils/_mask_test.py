@@ -388,4 +388,17 @@ def test_shape_to_mask_handles_boundary_and_degenerate_geometry(
     assert mask.dtype == bool
     assert bool(mask.any()) is expected_any
 
+@pytest.mark.parametrize(
+    "points",
+    [
+        [[10.0, 10.0]],
+        [[10.0, 10.0], [20.0, 20.0]],
+    ],
+    ids=["one_point_polygon", "two_point_polygon"],
+)
+def test_shape_to_mask_rejects_polygon_with_fewer_than_three_points(
+    *, points: list[list[float]]
+) -> None:
+    with pytest.raises(AssertionError, match="Polygon must have points more than 2"):
+        mask_module.shape_to_mask((100, 100), points, shape_type="polygon")
 
